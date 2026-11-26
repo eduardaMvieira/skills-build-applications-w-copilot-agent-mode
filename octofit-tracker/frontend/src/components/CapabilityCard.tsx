@@ -1,11 +1,10 @@
-import { useEffect, useState, type ReactNode } from 'react';
-import { getJson } from '../api/client.js';
+import type { ReactNode } from 'react';
 
 type Props<T extends Record<string, unknown>> = {
   title: string;
   description: string;
-  endpoint: string;
-  itemsKey: string;
+  items: T[] | null;
+  error: string;
   emptyText: string;
   renderItem: (item: T) => ReactNode;
 };
@@ -13,35 +12,11 @@ type Props<T extends Record<string, unknown>> = {
 export function CapabilityCard<T extends Record<string, unknown>>({
   title,
   description,
-  endpoint,
-  itemsKey,
+  items,
+  error,
   emptyText,
   renderItem,
 }: Props<T>) {
-  const [items, setItems] = useState<T[] | null>(null);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    let active = true;
-    setItems(null);
-    setError('');
-
-    getJson<Record<string, T[]>>(endpoint)
-      .then((data) => {
-        if (active) setItems(Array.isArray(data[itemsKey]) ? data[itemsKey] : []);
-      })
-      .catch((reason: unknown) => {
-        if (active) {
-          const message = reason instanceof Error ? reason.message : 'Unknown error';
-          setError(`Unable to load ${title}: ${message}`);
-        }
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [endpoint, itemsKey, title]);
-
   return (
     <section className="card h-100">
       <div className="card-body">
